@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { InitialItem } from '../types';
-import { Video, Upload, Play, Pause, RotateCcw, Volume2, Film, Check, Trash2 } from 'lucide-react';
+import { Play, Pause, Volume2, Film } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
-import { saveMediaFile, getAllMediaFiles, deleteMediaFile } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 
 interface MouthDiagramProps {
   type: InitialItem['mouthDiagramType'];
@@ -11,16 +11,14 @@ interface MouthDiagramProps {
 }
 
 export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated }) => {
-  // Map of custom video and audio URLs per symbol key (e.g. { 'b': 'blob:...', 'p': 'blob:...' })
+  // Map of bundled video and audio URLs per symbol key.
   const [customVideoMap, setCustomVideoMap] = useState<Record<string, string>>({});
   const [customAudioMap, setCustomAudioMap] = useState<Record<string, string>>({});
   
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(1.0);
-  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const currentKey = symbol.toLowerCase().trim();
   const customVideoUrl = customVideoMap[currentKey] || null;
@@ -30,7 +28,7 @@ export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated })
   const defaultLocalVideoUrl = `/video/${currentKey.replace(/[^a-z]/g, '')}.mp4`;
   const activeVideoSrc = customVideoUrl || defaultLocalVideoUrl;
 
-  // Load persisted media files from IndexedDB on initial mount
+  // Load bundled media files on initial mount.
   useEffect(() => {
     getAllMediaFiles().then((allMedia) => {
       const vMap: Record<string, string> = {};
@@ -47,17 +45,6 @@ export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated })
     });
   }, []);
 
-  // Reset playback and update notice when symbol changes
-  useEffect(() => {
-    if (customVideoMap[currentKey]) {
-      setUploadNotice(`Đã lưu video riêng cho [${symbol}]`);
-    } else if (customAudioMap[currentKey]) {
-      setUploadNotice(`Đã lưu audio riêng cho [${symbol}]`);
-    } else {
-      setUploadNotice(null);
-    }
-  }, [symbol, currentKey, customVideoMap, customAudioMap]);
-
   // When symbol changes, reset video player state
   useEffect(() => {
     setIsPlaying(false);
@@ -66,53 +53,6 @@ export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated })
       videoRef.current.load();
     }
   }, [symbol, currentKey]);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        if (file.type.startsWith('audio/')) {
-          const key = `audio_mouth_${currentKey}`;
-          const url = await saveMediaFile(key, file);
-          setCustomAudioMap((prev) => ({ ...prev, [currentKey]: url }));
-          setUploadNotice(`Đã tự động lưu audio [${symbol}]: ${file.name}`);
-        } else {
-          const key = `video_mouth_${currentKey}`;
-          const url = await saveMediaFile(key, file);
-          setCustomVideoMap((prev) => ({ ...prev, [currentKey]: url }));
-          setUploadNotice(`Đã tự động lưu video [${symbol}]: ${file.name}`);
-          setIsPlaying(true);
-          setTimeout(() => {
-            if (videoRef.current) {
-              videoRef.current.play().catch((err) => {
-                console.warn('Auto play video failed:', err);
-                setIsPlaying(false);
-              });
-            }
-          }, 150);
-        }
-      } catch (err) {
-        console.error('Error uploading mouth diagram media:', err);
-      } finally {
-        e.target.value = '';
-      }
-    }
-  };
-
-  const handleRemoveCustomVideo = async () => {
-    const key = `video_mouth_${currentKey}`;
-    await deleteMediaFile(key);
-    setCustomVideoMap((prev) => {
-      const next = { ...prev };
-      delete next[currentKey];
-      return next;
-    });
-    setUploadNotice(null);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.load();
-    }
-  };
 
   const handlePlayPause = () => {
     if (videoRef.current) {
@@ -157,35 +97,6 @@ export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated })
           )}
         </div>
 
-        {/* Upload & Clear Buttons */}
-        <div className="flex items-center gap-1.5">
-          {customVideoUrl && (
-            <button
-              onClick={handleRemoveCustomVideo}
-              className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
-              title={`Xóa video riêng của [${symbol}] và dùng video mặc định`}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          )}
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F9F7F2] hover:bg-[#E8E4DF] text-[#4A5D4E] border border-[#E8E4DF] rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
-            title={`Tải video hoặc audio (MOV, MP4, MP3...) riêng cho thanh mẫu [${symbol}]`}
-          >
-            <Upload className="w-3.5 h-3.5 text-[#4A5D4E]" />
-            <span>Tải Video Cho [{symbol}]</span>
-          </button>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="video/*,audio/*,.mp4,.webm,.mov,.mp3,.wav,.m4a"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
       </div>
 
       {/* Video Player Display Screen */}
@@ -202,13 +113,6 @@ export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated })
           className="w-full h-full object-contain max-h-[460px]"
         />
 
-        {/* Custom Video Notice Badge */}
-        {uploadNotice && (
-          <div className="absolute top-3 left-3 bg-emerald-900/90 text-emerald-200 text-xs font-bold px-3 py-1.5 rounded-xl backdrop-blur-md flex items-center gap-1.5 border border-emerald-500/30 shadow-md">
-            <Check className="w-4 h-4 text-emerald-400" />
-            {uploadNotice}
-          </div>
-        )}
       </div>
 
       {/* Video Controls & Speed Bar */}
@@ -253,4 +157,3 @@ export const MouthDiagram: React.FC<MouthDiagramProps> = ({ symbol, aspirated })
     </div>
   );
 };
-

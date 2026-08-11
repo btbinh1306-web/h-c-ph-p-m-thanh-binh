@@ -7,12 +7,9 @@ import { TonesSection } from './components/TonesSection';
 import { WordPracticeSection } from './components/WordPracticeSection';
 import { RulesSection } from './components/RulesSection';
 import { QuizGameSection } from './components/QuizGameSection';
-import { MediaBackupModal } from './components/MediaBackupModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
-  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
-  const [mediaReloadKey, setMediaReloadKey] = useState(0);
 
   const [score, setScore] = useState<number>(() => {
     const saved = localStorage.getItem('hsk_pinyin_score');
@@ -36,10 +33,6 @@ export default function App() {
     setStreak((prev) => prev + 1);
   };
 
-  const handleDataRestored = () => {
-    setMediaReloadKey((prev) => prev + 1);
-  };
-
   return (
     <div translate="no" className="min-h-screen bg-[#FDFCFB] text-[#2D2A26] flex flex-col font-sans selection:bg-[#A8B5A2]/40 selection:text-[#2D2A26] notranslate">
       {/* Navigation Bar */}
@@ -48,11 +41,10 @@ export default function App() {
         setActiveTab={setActiveTab}
         score={score}
         streak={streak}
-        onOpenBackupModal={() => setIsBackupModalOpen(true)}
       />
 
       {/* Main Content Area */}
-      <main key={mediaReloadKey} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && <OverviewSection onNavigate={setActiveTab} />}
         {activeTab === 'initials' && <InitialsSection onAddScore={handleAddScore} />}
         {activeTab === 'finals' && <FinalsSection onAddScore={handleAddScore} />}
@@ -61,13 +53,6 @@ export default function App() {
         {activeTab === 'rules' && <RulesSection />}
         {activeTab === 'quiz' && <QuizGameSection onAddScore={handleAddScore} />}
       </main>
-
-      {/* Media Backup Modal */}
-      <MediaBackupModal
-        isOpen={isBackupModalOpen}
-        onClose={() => setIsBackupModalOpen(false)}
-        onDataRestored={handleDataRestored}
-      />
 
       {/* Footer */}
       <footer className="bg-white border-t border-[#E8E4DF] py-6 mt-12 text-center text-xs text-gray-500">
@@ -80,6 +65,9 @@ export default function App() {
             <span>Thiết kế tối giản • Lược bỏ từ mới & nét chữ • Ngữ âm chuyên sâu</span>
           </div>
         </div>
+        <p className="mt-3 px-4 text-sm font-bold text-[#4A5D4E]">
+          Học tiếng Trung cùng Thanh Bình + Thanh Tùng
+        </p>
       </footer>
     </div>
   );

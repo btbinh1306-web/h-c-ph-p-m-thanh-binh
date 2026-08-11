@@ -237,6 +237,23 @@ export async function getAllMediaFiles(): Promise<Record<string, string>> {
     }
   }
 
+  // Merge the bundled Pinyin Pack so every device can play the built-in media.
+  if (typeof window !== 'undefined') {
+    try {
+      const response = await fetch('/pinyin-media-manifest.json');
+      if (response.ok) {
+        const bundledMedia = (await response.json()) as Record<string, string>;
+        for (const [key, url] of Object.entries(bundledMedia)) {
+          if (!result[key]) {
+            result[key] = url;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load bundled Pinyin Pack:', e);
+    }
+  }
+
   return result;
 }
 

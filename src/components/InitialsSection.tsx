@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { INITIALS_DATA, INITIAL_PARTS } from '../data/pinyinData';
 import { InitialItem } from '../types';
-import { Volume2, Wind, Sparkles, Filter, Check, Gamepad2, Award, RotateCcw, Upload, Trash2, Music, BookOpen } from 'lucide-react';
+import { Volume2, Wind, Sparkles, Filter, Check, Gamepad2, Award, RotateCcw, BookOpen } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
 import { FourLineGrid } from './FourLineGrid';
 import { MouthDiagram } from './MouthDiagram';
-import { saveMediaFile, getAllMediaFiles, deleteMediaFile } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 
 interface InitialsSectionProps {
   onAddScore?: (points: number) => void;
@@ -20,7 +20,7 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
   const partItems = INITIALS_DATA.filter((item) => item.partNumber === selectedPartNumber);
   const [activeInitial, setActiveInitial] = useState<InitialItem>(partItems[0] || INITIALS_DATA[0]);
 
-  // Custom MP3 audio uploaded by user for initials
+  // Bundled MP3 audio for initials and examples
   const [customAudioMap, setCustomAudioMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -34,35 +34,6 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
       setCustomAudioMap(audioMap);
     });
   }, []);
-
-  const handleAudioUpload = async (initialId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const key = `audio_initial_${initialId}`;
-        const url = await saveMediaFile(key, file);
-        setCustomAudioMap((prev) => ({
-          ...prev,
-          [initialId]: url,
-        }));
-        audioEngine.playMp3Url(url).catch(() => {});
-      } catch (err) {
-        console.error('Error saving initial audio:', err);
-      } finally {
-        e.target.value = '';
-      }
-    }
-  };
-
-  const removeCustomAudio = async (initialId: string) => {
-    const key = `audio_initial_${initialId}`;
-    await deleteMediaFile(key);
-    setCustomAudioMap((prev) => {
-      const next = { ...prev };
-      delete next[initialId];
-      return next;
-    });
-  };
 
   // Mini game state for current active part
   const [quizState, setQuizState] = useState<{
@@ -94,6 +65,7 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
   const availableGroupsInPart = Array.from(
     new Set(INITIALS_DATA.filter((i) => i.partNumber === selectedPartNumber).map((i) => i.group))
   );
+  const visibleGroups = selectedGroup === 'ALL' ? availableGroupsInPart : [selectedGroup];
 
   const playInitialSound = (item: InitialItem) => {
     setActiveInitial(item);
@@ -301,33 +273,41 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
             <span className="text-xs text-[#4A5D4E] font-medium">Bấm để nghe âm MP3</span>
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-            {filteredInitials.map((item) => {
-              const isSelected = activeInitial.id === item.id;
+          <div className="space-y-3">
+            {visibleGroups.map((groupName) => {
+              const rowItems = filteredInitials.filter((item) => item.group === groupName);
 
               return (
-                <button
-                  key={item.id}
-                  onClick={() => playInitialSound(item)}
-                  className={`group relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#4A5D4E] text-white border-[#3B4A3E] shadow-sm scale-105'
-                      : 'bg-[#FDFCFB] text-[#2D2A26] border-[#E8E4DF] hover:border-[#A8B5A2] hover:bg-[#F9F7F2]'
-                  }`}
-                >
-                  <span className="text-3xl font-bold font-serif tracking-wide">{item.symbol}</span>
+                <div key={groupName} className="grid grid-cols-4 gap-3">
+                  {rowItems.map((item) => {
+                    const isSelected = activeInitial.id === item.id;
 
-                  {item.aspirated && (
-                    <span
-                      title="Bật hơi mạnh"
-                      className={`absolute top-1.5 right-1.5 p-1 rounded-full text-[10px] ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
-                      }`}
-                    >
-                      <Wind className="w-3 h-3" />
-                    </span>
-                  )}
-                </button>
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => playInitialSound(item)}
+                        className={`group relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#4A5D4E] text-white border-[#3B4A3E] shadow-sm scale-105'
+                            : 'bg-[#FDFCFB] text-[#2D2A26] border-[#E8E4DF] hover:border-[#A8B5A2] hover:bg-[#F9F7F2]'
+                        }`}
+                      >
+                        <span className="text-3xl font-bold font-serif tracking-wide">{item.symbol}</span>
+
+                        {item.aspirated && (
+                          <span
+                            title="Bật hơi mạnh"
+                            className={`absolute top-1.5 right-1.5 p-1 rounded-full text-[10px] ${
+                              isSelected ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
+                            }`}
+                          >
+                            <Wind className="w-3 h-3" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
@@ -351,36 +331,7 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
                   <Volume2 className="w-5 h-5" />
                 </button>
 
-                {/* Upload custom MP3 for active initial */}
-                <label
-                  className="p-2 bg-white hover:bg-gray-100 text-gray-600 rounded-xl border border-[#E8E4DF] hover:border-[#A8B5A2] transition-transform active:scale-90 cursor-pointer inline-flex items-center gap-1 text-xs font-bold"
-                  title="Chèn file MP3 tùy chỉnh cho thanh mẫu này"
-                >
-                  <Upload className="w-4 h-4 text-[#4A5D4E]" />
-                  <input
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                    className="hidden"
-                    onChange={(e) => handleAudioUpload(activeInitial.id, e)}
-                  />
-                </label>
-
-                {customAudioMap[activeInitial.id] && (
-                  <button
-                    onClick={() => removeCustomAudio(activeInitial.id)}
-                    className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 transition-transform active:scale-90 cursor-pointer"
-                    title="Xóa file MP3 tự chèn"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
               </h3>
-              {customAudioMap[activeInitial.id] && (
-                <div className="mt-1 text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1">
-                  <Music className="w-3 h-3 text-amber-700" />
-                  Đã chèn file MP3 tùy chỉnh
-                </div>
-              )}
             </div>
 
             {/* Badges */}
@@ -437,15 +388,6 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
                 <Volume2 className="w-3.5 h-3.5" />
                 Nghe âm mẫu
               </button>
-              <label className="text-[9px] text-gray-400 hover:text-[#4A5D4E] cursor-pointer bg-white px-1.5 py-0.5 rounded border border-[#E8E4DF]">
-                {customAudioMap[`example-${activeInitial.id}`] ? 'Sửa MP3' : 'Thêm MP3'}
-                <input
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                  onChange={(e) => handleAudioUpload(`example-${activeInitial.id}`, e)}
-                  className="hidden"
-                />
-              </label>
             </div>
           </div>
         </div>
@@ -497,17 +439,6 @@ export const InitialsSection: React.FC<InitialsSectionProps> = ({ onAddScore }) 
                 <Volume2 className="w-8 h-8 animate-pulse" />
                 <span className="text-[10px] font-bold mt-1">Nghe MP3</span>
               </button>
-              {quizState.targetItem && (
-                <label className="text-[10px] text-gray-500 hover:text-[#4A5D4E] cursor-pointer bg-white px-2 py-1 rounded-lg border border-[#E8E4DF] shadow-xs mt-1">
-                  {customAudioMap[quizState.targetItem.id] ? 'Sửa MP3 câu này' : 'Tải lên MP3 câu này'}
-                  <input
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                    onChange={(e) => handleAudioUpload(quizState.targetItem!.id, e)}
-                    className="hidden"
-                  />
-                </label>
-              )}
             </div>
 
             {/* Option Buttons Grid */}

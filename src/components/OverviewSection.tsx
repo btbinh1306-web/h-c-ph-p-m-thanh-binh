@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Volume2, Sparkles, ArrowRight, Lightbulb, Gamepad2, BookOpen } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
 import { ActiveTab } from './HeaderNav';
@@ -8,22 +8,10 @@ interface OverviewSectionProps {
 }
 
 export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigate }) => {
-  const [customAudio, setCustomAudio] = useState<string | null>(null);
-
-  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const audioUrl = URL.createObjectURL(file);
-      setCustomAudio(audioUrl);
-    }
-  };
-
-  const playSample = (text: string) => {
-    if (customAudio) {
-      audioEngine.playMp3Url(customAudio);
-    } else {
-      audioEngine.speakPinyin(text);
-    }
+  const playSample = () => {
+    audioEngine.playMp3Url('/audio/audio_initial_example-h.mp3').catch(() => {
+      audioEngine.speakPinyin('hǎo');
+    });
   };
 
   return (
@@ -39,7 +27,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigate }) 
             Học Phát Âm Tiếng Trung Toàn Diện
           </h2>
           <p className="text-gray-200 text-xs sm:text-sm leading-relaxed">
-            Tập trung hoàn toàn vào trọn bộ <strong>23 Thanh Mẫu</strong>, <strong>36 Vận Mẫu</strong>, <strong>4 Thanh Điệu</strong> và <strong>Video Khẩu Hình 3D Chuẩn</strong> cùng trò chơi thử thách âm thanh trực quan giúp ghi nhớ sâu sắc (Lược bỏ từ mới & nét chữ).
+            Tập trung hoàn toàn vào trọn bộ <strong>21 Thanh Mẫu</strong>, <strong>36 Vận Mẫu</strong>, <strong>4 Thanh Điệu</strong> và <strong>Video Khẩu Hình 3D Chuẩn</strong> cùng trò chơi thử thách âm thanh trực quan giúp ghi nhớ sâu sắc (Lược bỏ từ mới & nét chữ).
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -89,22 +77,13 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigate }) 
               <span className="text-2xl text-gray-400">➔</span>
               <div className="flex flex-col items-center gap-2">
                 <button
-                  onClick={() => playSample('hǎo')}
+                  onClick={playSample}
                   className="group relative flex items-center gap-2 bg-white text-[#2D2A26] border border-[#E8E4DF] hover:border-[#A8B5A2] px-5 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-                  title={customAudio ? 'Nghe Audio MP3 của bạn' : 'Nghe AI phát âm'}
+                  title="Nghe MP3 chuẩn"
                 >
                   <span className="text-3xl font-extrabold font-serif text-[#4A5D4E]">hǎo</span>
                   <Volume2 className="w-5 h-5 text-[#4A5D4E] group-hover:scale-110 transition-transform" />
                 </button>
-                <label className="text-[10px] text-gray-500 hover:text-[#4A5D4E] cursor-pointer bg-white px-2 py-0.5 rounded border border-[#E8E4DF]">
-                  {customAudio ? 'Sửa MP3' : 'Thêm MP3'}
-                  <input
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                    onChange={handleAudioUpload}
-                    className="hidden"
-                  />
-                </label>
               </div>
             </div>
             <p className="text-xs text-gray-500 font-medium">Bấm vào nút "hǎo" để nghe tệp âm thanh MP3</p>
@@ -124,7 +103,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigate }) 
               </div>
               <div className="text-3xl font-bold text-[#4A5D4E] my-1 font-serif">h</div>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Phụ âm mở đầu đứng trước. Trọn bộ <strong>23 thanh mẫu</strong>.
+                Phụ âm mở đầu đứng trước. Trọn bộ <strong>21 thanh mẫu</strong>.
               </p>
             </div>
 
@@ -170,9 +149,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigate }) 
           className="bg-white p-5 rounded-2xl border border-[#E8E4DF] hover:border-[#A8B5A2] shadow-2xs transition-all cursor-pointer space-y-2"
         >
           <div className="w-9 h-9 rounded-xl bg-[#F9F7F2] border border-[#E8E4DF] text-[#4A5D4E] flex items-center justify-center font-bold text-sm">
-            23
+            21
           </div>
-          <h4 className="font-bold text-[#2D2A26] text-sm">23 Thanh Mẫu</h4>
+          <h4 className="font-bold text-[#2D2A26] text-sm">21 Thanh Mẫu</h4>
           <p className="text-xs text-gray-500 leading-relaxed">
             Video khẩu hình môi lưỡi & ô kẹp 4 dòng kẻ bính âm.
           </p>

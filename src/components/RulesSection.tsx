@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PINYIN_RULES_DATA } from '../data/pinyinData';
 import { Lightbulb, Volume2, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
-import { saveMediaFile, getAllMediaFiles } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 
 export const RulesSection: React.FC = () => {
   const [customAudioMap, setCustomAudioMap] = useState<Record<string, string>>({});
@@ -18,18 +18,6 @@ export const RulesSection: React.FC = () => {
       setCustomAudioMap(audioMap);
     });
   }, []);
-
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>, ruleExId: string) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const storageKey = `audio_rule_${ruleExId}`;
-      const url = await saveMediaFile(storageKey, file);
-      setCustomAudioMap((prev) => ({
-        ...prev,
-        [ruleExId]: url,
-      }));
-    }
-  };
 
   const playSound = (pinyinText: string, ruleExId: string) => {
     if (customAudioMap[ruleExId]) {
@@ -165,19 +153,10 @@ export const RulesSection: React.FC = () => {
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-gray-400 font-mono">{ex.original}</span>
                       <div className="flex items-center gap-2">
-                        <label className="text-[9px] text-gray-400 hover:text-[#4A5D4E] cursor-pointer whitespace-nowrap bg-white px-1.5 py-0.5 rounded border border-[#E8E4DF]">
-                          {customAudioMap[`${rule.id}-${i}`] ? 'Sửa MP3' : 'Thêm MP3'}
-                          <input
-                            type="file"
-                            accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                            onChange={(e) => handleAudioUpload(e, `${rule.id}-${i}`)}
-                            className="hidden"
-                          />
-                        </label>
                         <button
                           onClick={() => playSound(ex.pronounciation, `${rule.id}-${i}`)}
                           className="p-2 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded-lg shadow-xs transition-transform active:scale-90 cursor-pointer"
-                          title={customAudioMap[`${rule.id}-${i}`] ? `Nghe Audio MP3 của bạn` : `Nghe AI phát âm ${ex.pronounciation}`}
+                          title={`Nghe MP3 chuẩn ${ex.pronounciation}`}
                         >
                           <Volume2 className="w-4 h-4" />
                         </button>

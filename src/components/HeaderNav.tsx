@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Volume2, Gamepad2, Sparkles, Award, Flame, Lightbulb, Music, GraduationCap, HardDrive } from 'lucide-react';
+import { BookOpen, Volume2, Gamepad2, Sparkles, Award, Flame, Lightbulb, Music, GraduationCap } from 'lucide-react';
 
 export type ActiveTab = 'overview' | 'initials' | 'finals' | 'tones' | 'words' | 'rules' | 'quiz';
 
@@ -8,13 +8,12 @@ interface HeaderNavProps {
   setActiveTab: (tab: ActiveTab) => void;
   score: number;
   streak: number;
-  onOpenBackupModal?: () => void;
 }
 
-export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab, score, streak, onOpenBackupModal }) => {
+export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab, score, streak }) => {
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     { id: 'overview', label: 'Tổng Quan', icon: <BookOpen className="w-4 h-4" /> },
-    { id: 'initials', label: 'Thanh Mẫu (23)', icon: <Volume2 className="w-4 h-4" /> },
+    { id: 'initials', label: 'Thanh Mẫu (21)', icon: <Volume2 className="w-4 h-4" /> },
     { id: 'finals', label: 'Vận Mẫu (36)', icon: <Music className="w-4 h-4" /> },
     { id: 'tones', label: 'Thanh Điệu', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'words', label: 'Bài Tập Đọc Từ', icon: <GraduationCap className="w-4 h-4" />, badge: 'Luyện MP3' },
@@ -45,20 +44,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab, s
             </div>
           </div>
 
-          {/* User Score & Backup Media Button */}
+          {/* User Score */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {onOpenBackupModal && (
-              <button
-                onClick={onOpenBackupModal}
-                className="flex items-center gap-1.5 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-2xs transition-transform active:scale-95 cursor-pointer"
-                title="Sao lưu & chuyển file MP3/MOV sang địa chỉ web khác"
-              >
-                <HardDrive className="w-3.5 h-3.5 text-emerald-200" />
-                <span className="hidden sm:inline">Sao Lưu MP3/MOV</span>
-                <span className="sm:hidden">Sao Lưu</span>
-              </button>
-            )}
-
             <div className="flex items-center gap-1.5 bg-[#F9F7F2] border border-[#E8E4DF] text-[#4A5D4E] px-2.5 py-1.5 rounded-full text-xs font-semibold">
               <Award className="w-3.5 h-3.5 text-[#4A5D4E]" />
               <span>{score} điểm</span>

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { TONES_DATA } from '../data/pinyinData';
 import { ToneItem } from '../types';
-import { Volume2, Sparkles, TrendingUp, Music, Upload, Trash2 } from 'lucide-react';
+import { Volume2, Sparkles, TrendingUp, Music } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
-import { saveMediaFile, getAllMediaFiles, deleteMediaFile } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 
 export const TonesSection: React.FC = () => {
   const [activeTone, setActiveTone] = useState<ToneItem>(TONES_DATA[0]);
 
-  // Custom MP3 audio map for tones and comparison items
+  // Bundled MP3 audio map for tones and comparison items
   const [customAudioMap, setCustomAudioMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -22,28 +22,6 @@ export const TonesSection: React.FC = () => {
       setCustomAudioMap(audioMap);
     });
   }, []);
-
-  const handleAudioUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const storageKey = `audio_tone_${key}`;
-      const url = await saveMediaFile(storageKey, file);
-      setCustomAudioMap((prev) => ({
-        ...prev,
-        [key]: url,
-      }));
-    }
-  };
-
-  const removeCustomAudio = async (key: string) => {
-    const storageKey = `audio_tone_${key}`;
-    await deleteMediaFile(storageKey);
-    setCustomAudioMap((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-  };
 
   const playToneSound = (key: string, defaultPinyin: string) => {
     if (customAudioMap[key]) {
@@ -88,39 +66,44 @@ export const TonesSection: React.FC = () => {
             <span className="text-[#4A5D4E] font-bold">Nấc 5 (Cao) ➔ Nấc 1 (Trầm)</span>
           </div>
 
-          <div className="relative h-52 w-full flex items-center justify-between px-6 border-l-2 border-b-2 border-[#E8E4DF]">
-            <div className="absolute inset-x-6 top-3 border-b border-gray-200 flex justify-between text-[10px] text-gray-400 font-mono">
-              <span>5 (Cao)</span>
-            </div>
-            <div className="absolute inset-x-6 top-14 border-b border-gray-200 flex justify-between text-[10px] text-gray-400 font-mono">
-              <span>4</span>
-            </div>
-            <div className="absolute inset-x-6 top-24 border-b border-gray-200 flex justify-between text-[10px] text-gray-400 font-mono">
-              <span>3 (Trung bình)</span>
-            </div>
-            <div className="absolute inset-x-6 top-34 border-b border-gray-200 flex justify-between text-[10px] text-gray-400 font-mono">
-              <span>2</span>
-            </div>
-            <div className="absolute inset-x-6 top-44 border-b border-gray-200 flex justify-between text-[10px] text-gray-400 font-mono">
-              <span>1 (Trầm)</span>
-            </div>
+          <div className="relative h-64 sm:h-72 w-full overflow-hidden border-l-2 border-b-2 border-[#E8E4DF]">
+            <svg
+              className="absolute inset-0 z-10 h-full w-full"
+              viewBox="0 0 560 220"
+              preserveAspectRatio="xMidYMid meet"
+              role="img"
+              aria-label="Biểu đồ cao độ năm nấc của các thanh điệu tiếng Trung"
+            >
+              <g stroke="#D9DEE6" strokeWidth="1">
+                <line x1="48" y1="20" x2="540" y2="20" />
+                <line x1="48" y1="66" x2="540" y2="66" />
+                <line x1="48" y1="112" x2="540" y2="112" />
+                <line x1="48" y1="158" x2="540" y2="158" />
+                <line x1="48" y1="204" x2="540" y2="204" />
+              </g>
 
-            {/* Trajectory Lines */}
-            <svg className="absolute inset-6 w-[calc(100%-3rem)] h-[calc(100%-3rem)] pointer-events-none" viewBox="0 0 500 160">
-              <line x1="20" y1="15" x2="100" y2="15" stroke="#4A5D4E" strokeWidth="4" strokeLinecap="round" />
-              <text x="50" y="35" fill="#4A5D4E" fontSize="11" fontWeight="bold">T1: 5-5</text>
+              <g fill="#94A3B8" fontSize="11" fontFamily="monospace">
+                <text x="0" y="24">5 (Cao)</text>
+                <text x="0" y="70">4</text>
+                <text x="0" y="116">3 (Trung bình)</text>
+                <text x="0" y="162">2</text>
+                <text x="0" y="208">1 (Trầm)</text>
+              </g>
 
-              <path d="M 120 80 Q 160 50 190 15" stroke="#10B981" strokeWidth="4" strokeLinecap="round" fill="none" />
-              <text x="140" y="95" fill="#10B981" fontSize="11" fontWeight="bold">T2: 3-5</text>
+              <line x1="88" y1="20" x2="158" y2="20" stroke="#4A5D4E" strokeWidth="4" strokeLinecap="round" />
+              <text x="110" y="46" fill="#4A5D4E" fontSize="11" fontWeight="bold">T1: 5-5</text>
 
-              <path d="M 220 110 Q 250 150 290 40" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" fill="none" />
-              <text x="240" y="145" fill="#F59E0B" fontSize="11" fontWeight="bold">T3: 2-1-4</text>
+              <path d="M 180 112 Q 215 88 245 20" stroke="#10B981" strokeWidth="4" strokeLinecap="round" fill="none" />
+              <text x="202" y="138" fill="#10B981" fontSize="11" fontWeight="bold">T2: 3-5</text>
 
-              <line x1="320" y1="15" x2="390" y2="140" stroke="#EF4444" strokeWidth="4" strokeLinecap="round" />
-              <text x="310" y="65" fill="#EF4444" fontSize="11" fontWeight="bold">T4: 5-1</text>
+              <path d="M 282 158 Q 318 214 365 66" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" fill="none" />
+              <text x="295" y="195" fill="#F59E0B" fontSize="11" fontWeight="bold">T3: 2-1-4</text>
 
-              <circle cx="440" cy="90" r="6" fill="#8B5CF6" />
-              <text x="420" y="115" fill="#8B5CF6" fontSize="11" fontWeight="bold">Thanh Nhẹ</text>
+              <line x1="397" y1="20" x2="455" y2="204" stroke="#EF4444" strokeWidth="5" strokeLinecap="round" />
+              <text x="380" y="96" fill="#EF4444" fontSize="11" fontWeight="bold">T4: 5-1</text>
+
+              <circle cx="505" cy="112" r="6" fill="#8B5CF6" />
+              <text x="466" y="142" fill="#8B5CF6" fontSize="11" fontWeight="bold">Thanh Nhẹ</text>
             </svg>
           </div>
         </div>
@@ -130,8 +113,6 @@ export const TonesSection: React.FC = () => {
           {TONES_DATA.map((tone) => {
             const isSelected = activeTone.toneNumber === tone.toneNumber;
             const toneKey = `tone_${tone.toneNumber}`;
-            const hasCustomMp3 = Boolean(customAudioMap[toneKey]);
-
             return (
               <div
                 key={tone.toneNumber}
@@ -151,33 +132,6 @@ export const TonesSection: React.FC = () => {
                   </span>
 
                   <div className="flex items-center gap-1">
-                    <label
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-1.5 bg-white hover:bg-gray-100 text-gray-600 rounded-lg border border-[#E8E4DF] hover:border-[#A8B5A2] transition-transform active:scale-90 cursor-pointer"
-                      title="Chèn file MP3 tùy chỉnh cho thanh điệu này"
-                    >
-                      <Upload className="w-3.5 h-3.5 text-[#4A5D4E]" />
-                      <input
-                        type="file"
-                        accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                        className="hidden"
-                        onChange={(e) => handleAudioUpload(toneKey, e)}
-                      />
-                    </label>
-
-                    {hasCustomMp3 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeCustomAudio(toneKey);
-                        }}
-                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-200 transition-transform active:scale-90 cursor-pointer"
-                        title="Xóa MP3 tự chèn"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -194,12 +148,6 @@ export const TonesSection: React.FC = () => {
                 <div>
                   <h4 className="font-extrabold text-[#2D2A26] text-base font-serif flex items-center justify-between">
                     <span>{tone.name}</span>
-                    {hasCustomMp3 && (
-                      <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
-                        <Music className="w-3 h-3 text-amber-700" />
-                        MP3 Tự Chèn
-                      </span>
-                    )}
                   </h4>
                   <div className="text-xs text-[#4A5D4E] font-semibold">{tone.chineseName}</div>
                 </div>
@@ -228,7 +176,7 @@ export const TonesSection: React.FC = () => {
           Bấm từng ô để nghe sự thay đổi cao độ giọng giữa 4 thanh điệu cùng nguyên âm:
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+        <div className="grid grid-cols-4 gap-3 pt-2">
           {[
             { pinyin: 'ā', word: 'ā (Thanh 1)', meaning: 'Cao bằng' },
             { pinyin: 'á', word: 'á (Thanh 2)', meaning: 'Vút lên' },
@@ -244,8 +192,6 @@ export const TonesSection: React.FC = () => {
             { pinyin: 'ì', word: 'ì (Thanh 4)', meaning: 'Rơi gắt' },
           ].map((item, idx) => {
             const gridKey = `grid_${item.pinyin}`;
-            const hasGridCustomMp3 = Boolean(customAudioMap[gridKey]);
-
             return (
               <div
                 key={idx}
@@ -253,37 +199,9 @@ export const TonesSection: React.FC = () => {
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-serif text-[#4A5D4E] font-extrabold">{item.pinyin}</span>
-                  {hasGridCustomMp3 && (
-                    <span className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1 py-0.2 rounded">
-                      MP3
-                    </span>
-                  )}
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <label
-                    className="p-1 bg-white hover:bg-gray-100 text-gray-600 rounded border border-[#E8E4DF] cursor-pointer"
-                    title="Chèn MP3 cho ô này"
-                  >
-                    <Upload className="w-3 h-3 text-[#4A5D4E]" />
-                    <input
-                      type="file"
-                      accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                      className="hidden"
-                      onChange={(e) => handleAudioUpload(gridKey, e)}
-                    />
-                  </label>
-
-                  {hasGridCustomMp3 && (
-                    <button
-                      onClick={() => removeCustomAudio(gridKey)}
-                      className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded border border-rose-200 cursor-pointer"
-                      title="Xóa MP3"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
-
                   <button
                     onClick={() => playToneSound(gridKey, item.pinyin)}
                     className="p-1.5 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded shadow-2xs active:scale-95 transition-transform cursor-pointer"

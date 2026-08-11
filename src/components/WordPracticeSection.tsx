@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PINYIN_WORDS_DATA, PinyinWordItem } from '../data/pinyinWordsData';
-import { Volume2, BookOpen, CheckCircle, RotateCcw, Award, Filter, Sparkles, Upload, Trash2 } from 'lucide-react';
+import { Volume2, BookOpen, CheckCircle, RotateCcw, Award, Filter, Sparkles } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
-import { saveMediaFile, getAllMediaFiles, deleteMediaFile } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 
 interface WordPracticeSectionProps {
   onAddScore?: (points: number) => void;
@@ -44,45 +44,6 @@ export const WordPracticeSection: React.FC<WordPracticeSectionProps> = ({ onAddS
     selectedCategory === 'ALL'
       ? PINYIN_WORDS_DATA
       : PINYIN_WORDS_DATA.filter((w) => w.category === selectedCategory);
-
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>, wordId: string) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const key = `audio_word_${wordId}`;
-        const audioUrl = await saveMediaFile(key, file);
-        setCustomAudioMap((prev) => ({
-          ...prev,
-          [wordId]: audioUrl,
-        }));
-        // Play uploaded audio as instant confirmation
-        audioEngine.playMp3Url(audioUrl).catch(() => {
-          const word = PINYIN_WORDS_DATA.find((w) => w.id === wordId);
-          if (word) {
-            audioEngine.speakPinyin(word.chinese || word.audioPinyin, playbackRate);
-          }
-        });
-      } catch (err) {
-        console.error('Error saving audio file:', err);
-      } finally {
-        e.target.value = '';
-      }
-    }
-  };
-
-  const handleDeleteAudio = async (wordId: string) => {
-    try {
-      const key = `audio_word_${wordId}`;
-      await deleteMediaFile(key);
-      setCustomAudioMap((prev) => {
-        const next = { ...prev };
-        delete next[wordId];
-        return next;
-      });
-    } catch (err) {
-      console.error('Error deleting audio file:', err);
-    }
-  };
 
   const playWordAudio = (item: PinyinWordItem) => {
     const customUrl = customAudioMap[item.id];
@@ -221,7 +182,7 @@ export const WordPracticeSection: React.FC<WordPracticeSectionProps> = ({ onAddS
               </div>
             </div>
 
-            {/* Audio Play Button & Upload */}
+            {/* Audio Play Button */}
             <div className="flex flex-col justify-center items-center gap-3 pt-2">
               <div className="flex items-center gap-2">
                 <button
@@ -229,34 +190,9 @@ export const WordPracticeSection: React.FC<WordPracticeSectionProps> = ({ onAddS
                   className="px-6 py-3 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded-xl text-sm font-bold inline-flex items-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer"
                 >
                   <Volume2 className="w-5 h-5 animate-pulse" />
-                  <span>
-                    {customAudioMap[currentFlashcard.id]
-                      ? `Nghe Audio MP3 của bạn`
-                      : `Nghe AI Phát Âm Từ (${currentFlashcard.chinese})`}
-                  </span>
+                  <span>Nghe MP3 chuẩn ({currentFlashcard.chinese})</span>
                 </button>
-
-                {customAudioMap[currentFlashcard.id] && (
-                  <button
-                    onClick={() => handleDeleteAudio(currentFlashcard.id)}
-                    className="p-3 text-red-500 hover:text-red-700 bg-white border border-[#E8E4DF] hover:border-red-300 rounded-xl transition-colors cursor-pointer"
-                    title="Xóa file MP3 đã tải lên"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
               </div>
-
-              <label className="text-xs font-semibold text-[#4A5D4E] hover:text-[#3B4A3E] bg-white border border-[#E8E4DF] px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1.5 shadow-2xs transition-colors">
-                <Upload className="w-3.5 h-3.5" />
-                <span>{customAudioMap[currentFlashcard.id] ? 'Thay đổi MP3' : 'Tải lên MP3 từ máy'}</span>
-                <input
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                  onChange={(e) => handleAudioUpload(e, currentFlashcard.id)}
-                  className="hidden"
-                />
-              </label>
             </div>
 
             {/* Phonetic Tip */}
@@ -320,40 +256,17 @@ export const WordPracticeSection: React.FC<WordPracticeSectionProps> = ({ onAddS
                     </div>
                   </div>
 
-                  {/* Audio Play Action & Upload */}
+                  {/* Audio Play Action */}
                   <div className="flex flex-col items-end gap-1.5">
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => playWordAudio(item)}
-                        className={`p-2.5 text-white rounded-xl shadow-xs transition-transform active:scale-90 cursor-pointer ${
-                          customAudioMap[item.id] ? 'bg-amber-700 hover:bg-amber-800' : 'bg-[#4A5D4E] hover:bg-[#3B4A3E]'
-                        }`}
-                        title={customAudioMap[item.id] ? `Nghe Audio MP3 của bạn` : `Nghe AI phát âm ${item.pinyin}`}
+                        className="p-2.5 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded-xl shadow-xs transition-transform active:scale-90 cursor-pointer"
+                        title={`Nghe MP3 chuẩn ${item.pinyin}`}
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>
-
-                      {customAudioMap[item.id] && (
-                        <button
-                          onClick={() => handleDeleteAudio(item.id)}
-                          className="p-2.5 text-red-500 hover:text-red-700 bg-[#F9F7F2] hover:bg-red-50 border border-[#E8E4DF] rounded-xl transition-colors cursor-pointer"
-                          title="Xóa MP3 cá nhân"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
                     </div>
-
-                    <label className="text-[10px] text-[#4A5D4E] hover:text-[#2D2A26] font-semibold cursor-pointer flex items-center gap-1 bg-[#F9F7F2] px-2 py-0.5 rounded border border-[#E8E4DF] whitespace-nowrap">
-                      <Upload className="w-2.5 h-2.5" />
-                      <span>{customAudioMap[item.id] ? 'Sửa MP3' : 'Thêm MP3'}</span>
-                      <input
-                        type="file"
-                        accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                        onChange={(e) => handleAudioUpload(e, item.id)}
-                        className="hidden"
-                      />
-                    </label>
                   </div>
                 </div>
 

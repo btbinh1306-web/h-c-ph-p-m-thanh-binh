@@ -981,9 +981,9 @@ export const PINYIN_RULES_DATA: PinyinRule[] = [
     title: '5. Quy tắc viết tắt của vận mẫu iou, uei, uen',
     summary: 'Khi ghép với thanh mẫu phía trước, iou viết thành iu, uei viết thành ui, uen viết thành un.',
     details: [
-      'i + iou ➔ iu (Ví dụ: j + iou ➔ jiǔ)',
-      'u + uei ➔ ui (Ví dụ: sh + uei ➔ shuǐ)',
-      'u + uen ➔ un (Ví dụ: ch + uen ➔ chūn)',
+      'Thanh mẫu + iou ➔ iu (Ví dụ: j + iou ➔ jiǔ)',
+      'Thanh mẫu + uei ➔ ui (Ví dụ: sh + uei ➔ shuǐ)',
+      'Thanh mẫu + uen ➔ un (Ví dụ: ch + uen ➔ chūn)',
     ],
     examples: [
       { original: 'j + iou', written: 'jiǔ', pronounciation: 'jiǔ', meaning: 'Số 9 / Rượu' },

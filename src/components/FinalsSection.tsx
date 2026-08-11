@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FINALS_DATA, FINAL_PARTS } from '../data/pinyinData';
 import { FinalItem } from '../types';
-import { Volume2, Filter, Music, Gamepad2, Award, RotateCcw, Upload, Trash2, CheckCircle2 } from 'lucide-react';
+import { Volume2, Filter, Music, Gamepad2, Award, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
-import { saveMediaFile, getAllMediaFiles, deleteMediaFile } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 
 interface FinalsSectionProps {
   onAddScore?: (points: number) => void;
@@ -18,7 +18,6 @@ interface FinalQuizGameCardProps {
   targetPool: FinalItem[];
   customAudioMap: Record<string, string>;
   onAddScore?: (points: number) => void;
-  onAudioUpload?: (finalId: string, e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const FinalQuizGameCard: React.FC<FinalQuizGameCardProps> = ({
@@ -30,7 +29,6 @@ const FinalQuizGameCard: React.FC<FinalQuizGameCardProps> = ({
   targetPool,
   customAudioMap,
   onAddScore,
-  onAudioUpload,
 }) => {
   const [quizState, setQuizState] = useState<{
     targetItem: FinalItem | null;
@@ -135,17 +133,6 @@ const FinalQuizGameCard: React.FC<FinalQuizGameCardProps> = ({
               <Volume2 className="w-8 h-8 animate-pulse" />
               <span className="text-[10px] font-bold mt-1">Nghe MP3</span>
             </button>
-            {quizState.targetItem && onAudioUpload && (
-              <label className="text-[10px] text-gray-500 hover:text-[#4A5D4E] cursor-pointer bg-white px-2 py-1 rounded-lg border border-[#E8E4DF] shadow-xs mt-1">
-                {customAudioMap[quizState.targetItem.id] ? 'Sửa MP3 câu này' : 'Tải lên MP3 câu này'}
-                <input
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                  onChange={(e) => onAudioUpload(quizState.targetItem!.id, e)}
-                  className="hidden"
-                />
-              </label>
-            )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-md mx-auto">
@@ -225,35 +212,6 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
       setCustomAudioMap(audioMap);
     });
   }, []);
-
-  const handleAudioUpload = async (finalId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const key = `audio_final_${finalId}`;
-        const url = await saveMediaFile(key, file);
-        setCustomAudioMap((prev) => ({
-          ...prev,
-          [finalId]: url,
-        }));
-        audioEngine.playMp3Url(url).catch(() => {});
-      } catch (err) {
-        console.error('Error saving final audio:', err);
-      } finally {
-        e.target.value = '';
-      }
-    }
-  };
-
-  const removeCustomAudio = async (finalId: string) => {
-    const key = `audio_final_${finalId}`;
-    await deleteMediaFile(key);
-    setCustomAudioMap((prev) => {
-      const next = { ...prev };
-      delete next[finalId];
-      return next;
-    });
-  };
 
   const categories = [
     { key: 'ALL', label: 'Tất Cả' },
@@ -371,43 +329,14 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
                   <span className="text-[11px] font-bold bg-[#F9F7F2] text-[#4A5D4E] px-2.5 py-0.5 rounded-full border border-[#E8E4DF]">
                     {item.category}
                   </span>
-                  {customAudioMap[item.id] && (
-                    <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
-                      <Music className="w-3 h-3 text-amber-700" />
-                      MP3 Tự Chèn
-                    </span>
-                  )}
                 </div>
                 <div className="text-3xl font-extrabold text-[#2D2A26] font-serif tracking-wide mt-2">
                   {item.symbol}
                 </div>
               </div>
 
-              {/* Audio Play & Upload Buttons */}
+              {/* Audio Play Button */}
               <div className="flex items-center gap-1">
-                <label
-                  className="p-2.5 bg-white hover:bg-gray-100 text-gray-600 rounded-xl border border-[#E8E4DF] hover:border-[#A8B5A2] transition-transform active:scale-90 cursor-pointer"
-                  title="Chèn file MP3 tùy chỉnh cho vận mẫu này"
-                >
-                  <Upload className="w-4 h-4 text-[#4A5D4E]" />
-                  <input
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                    className="hidden"
-                    onChange={(e) => handleAudioUpload(item.id, e)}
-                  />
-                </label>
-
-                {customAudioMap[item.id] && (
-                  <button
-                    onClick={() => removeCustomAudio(item.id)}
-                    className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 transition-transform active:scale-90 cursor-pointer"
-                    title="Xóa file MP3 tự chèn"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-
                 <button
                   onClick={() => playFinalSound(item)}
                   className="p-3 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded-xl shadow-xs transition-transform active:scale-90 cursor-pointer"
@@ -445,15 +374,6 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
                   <Volume2 className="w-3.5 h-3.5 text-[#4A5D4E]" />
                   Nghe
                 </button>
-                <label className="text-[9px] text-gray-400 hover:text-[#4A5D4E] cursor-pointer bg-white px-1.5 py-0.5 rounded border border-[#E8E4DF]">
-                  {customAudioMap[`example-${item.id}`] ? 'Sửa MP3' : 'Thêm MP3'}
-                  <input
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                    onChange={(e) => handleAudioUpload(`example-${item.id}`, e)}
-                    className="hidden"
-                  />
-                </label>
               </div>
             </div>
           </div>
@@ -486,7 +406,6 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
             targetPool={part1Finals}
             customAudioMap={customAudioMap}
             onAddScore={onAddScore}
-            onAudioUpload={handleAudioUpload}
           />
 
           {/* Trò chơi 2: Đoán Vận Mẫu - Chỉ lấy dữ liệu của Phần 2 */}
@@ -499,7 +418,6 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
             targetPool={part2Finals}
             customAudioMap={customAudioMap}
             onAddScore={onAddScore}
-            onAudioUpload={handleAudioUpload}
           />
 
           {/* Trò chơi 3: Đoán Tổng Hợp - Lấy dữ liệu của Phần 1 và Phần 2 trộn chung */}
@@ -512,7 +430,6 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
             targetPool={FINALS_DATA}
             customAudioMap={customAudioMap}
             onAddScore={onAddScore}
-            onAudioUpload={handleAudioUpload}
           />
         </div>
       </div>

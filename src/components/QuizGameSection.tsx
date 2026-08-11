@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { QUIZ_QUESTIONS } from '../data/pinyinData';
 import { QuizQuestion } from '../types';
-import { Volume2, Gamepad2, RotateCcw, CheckCircle2, XCircle, Award, Sparkles, Upload, Trash2, Music, Layers } from 'lucide-react';
+import { Volume2, Gamepad2, RotateCcw, CheckCircle2, XCircle, Award, Sparkles, Layers } from 'lucide-react';
 import { audioEngine } from '../services/audioEngine';
-import { saveMediaFile, getAllMediaFiles, deleteMediaFile } from '../services/mediaStorage';
+import { getAllMediaFiles } from '../services/mediaStorage';
 import confetti from 'canvas-confetti';
 
 interface QuizGameSectionProps {
@@ -24,7 +24,7 @@ export const QuizGameSection: React.FC<QuizGameSectionProps> = ({ onAddScore }) 
   const [customAudioMap, setCustomAudioMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Load custom uploaded quiz audio from IndexedDB
+    // Load bundled quiz audio from the static Pinyin Pack
     getAllMediaFiles().then((allMedia) => {
       const quizMap: Record<string, string> = {};
       Object.keys(allMedia).forEach((key) => {
@@ -38,40 +38,6 @@ export const QuizGameSection: React.FC<QuizGameSectionProps> = ({ onAddScore }) 
       console.error('Failed to load media files:', err);
     });
   }, []);
-
-  const handleAudioUpload = async (questionId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const key = `audio_quiz_${questionId}`;
-        const audioUrl = await saveMediaFile(key, file);
-        setCustomAudioMap((prev) => ({
-          ...prev,
-          [questionId]: audioUrl,
-        }));
-        // Play the newly uploaded audio immediately
-        audioEngine.playMp3Url(audioUrl).catch(() => {
-          if (currentQ) {
-            audioEngine.speakPinyin(currentQ.audioPinyin);
-          }
-        });
-      } catch (err) {
-        console.error('Error saving audio file:', err);
-      } finally {
-        e.target.value = '';
-      }
-    }
-  };
-
-  const removeCustomAudio = async (questionId: string) => {
-    const key = `audio_quiz_${questionId}`;
-    await deleteMediaFile(key);
-    setCustomAudioMap((prev) => {
-      const next = { ...prev };
-      delete next[questionId];
-      return next;
-    });
-  };
 
   useEffect(() => {
     restartGame(gameMode);
@@ -263,37 +229,7 @@ export const QuizGameSection: React.FC<QuizGameSectionProps> = ({ onAddScore }) 
                 <span>PHÁT ÂM MP3</span>
               </button>
 
-              <label
-                className="flex items-center gap-1.5 bg-white hover:bg-gray-100 text-[#4A5D4E] font-bold px-4 py-3.5 rounded-xl text-xs border border-[#E8E4DF] hover:border-[#A8B5A2] shadow-2xs transition-transform active:scale-95 cursor-pointer"
-                title="Tải lên file MP3 tùy chỉnh cho câu hỏi này"
-              >
-                <Upload className="w-4 h-4 text-[#4A5D4E]" />
-                <span>TỰ CHÈN FILE MP3</span>
-                <input
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                  className="hidden"
-                  onChange={(e) => handleAudioUpload(currentQ.id, e)}
-                />
-              </label>
-
-              {customAudioMap[currentQ.id] && (
-                <button
-                  onClick={() => removeCustomAudio(currentQ.id)}
-                  className="p-3.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 shadow-2xs transition-transform active:scale-95 cursor-pointer"
-                  title="Xóa file MP3 tự chèn"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
             </div>
-
-            {customAudioMap[currentQ.id] && (
-              <div className="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
-                <Music className="w-3.5 h-3.5 text-amber-700" />
-                Đã chèn file MP3 tùy chỉnh cho câu hỏi này
-              </div>
-            )}
 
             <div className="text-5xl font-serif font-extrabold text-[#2D2A26] tracking-wider">
               {currentQ.displayPrompt}
