@@ -1,0 +1,6 @@
+{
+  "name": "Học Phát Âm Tiếng Trung - Pinyin Toàn Diện",
+  "description": "Ứng dụng dạy phát âm Tiếng Trung toàn diện (Thanh mẫu, Vận mẫu, Thanh điệu, Quy tắc Pinyin & Trò chơi đoán âm) theo tài liệu chuẩn HSK.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
