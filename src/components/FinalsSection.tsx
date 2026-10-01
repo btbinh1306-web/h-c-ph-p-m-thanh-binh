@@ -316,21 +316,21 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
       </div>
 
       {/* Grid of Finals Cards for Selected Part */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredFinals.map((item) => (
           <div
             key={item.id}
-            className="bg-white rounded-2xl p-5 border border-[#E8E4DF] hover:border-[#A8B5A2] shadow-xs transition-all flex flex-col justify-between space-y-4 group"
+            className="bg-white rounded-xl p-3 border border-[#E8E4DF] hover:border-[#A8B5A2] shadow-xs transition-all flex flex-col justify-between space-y-2 group"
           >
             {/* Card Header: Symbol & Category Badge */}
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-bold bg-[#F9F7F2] text-[#4A5D4E] px-2.5 py-0.5 rounded-full border border-[#E8E4DF]">
+                  <span className="text-[10px] font-bold bg-[#F9F7F2] text-[#4A5D4E] px-2 py-0.5 rounded-full border border-[#E8E4DF]">
                     {item.category}
                   </span>
                 </div>
-                <div className="text-3xl font-extrabold text-[#2D2A26] font-serif tracking-wide mt-2">
+                <div className="text-2xl font-extrabold text-[#2D2A26] font-serif tracking-wide mt-1">
                   {item.symbol}
                 </div>
               </div>
@@ -339,26 +339,21 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => playFinalSound(item)}
-                  className="p-3 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded-xl shadow-xs transition-transform active:scale-90 cursor-pointer"
+                  className="p-2.5 bg-[#4A5D4E] hover:bg-[#3B4A3E] text-white rounded-lg shadow-xs transition-transform active:scale-90 cursor-pointer"
                   title={`Nghe phát âm MP3 ${item.symbol}`}
                 >
-                  <Volume2 className="w-5 h-5" />
+                  <Volume2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Vietnamese Guide */}
-            <div className="space-y-1.5 bg-[#F9F7F2] p-3 rounded-xl border border-[#E8E4DF] text-xs">
-              <div className="font-bold text-[#2D2A26]">
-                Tiếng Việt: <span className="text-[#4A5D4E] font-bold">{item.vietnameseGuide}</span>
-              </div>
-              <div className="text-gray-500">
-                Khẩu hình: {item.mouthGuide}
-              </div>
+            {/* Mouth position guide */}
+            <div className="bg-[#F9F7F2] px-2.5 py-2 rounded-lg border border-[#E8E4DF] text-[11px] text-gray-500">
+              Khẩu hình: {item.mouthGuide}
             </div>
 
             {/* Example Word */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#E8E4DF]">
+            <div className="flex items-center justify-between pt-1.5 border-t border-[#E8E4DF]">
               <div>
                 <span className="text-[10px] text-gray-400 font-bold uppercase">Ví dụ</span>
                 <div className="text-xs font-bold text-[#2D2A26]">
@@ -369,7 +364,7 @@ export const FinalsSection: React.FC<FinalsSectionProps> = ({ onAddScore }) => {
               <div className="flex flex-col items-end gap-1">
                 <button
                   onClick={() => playExampleSound(item.examplePinyin, `example-${item.id}`)}
-                  className="px-2.5 py-1.5 bg-[#F9F7F2] border border-[#E8E4DF] hover:bg-gray-100 text-[#2D2A26] rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="px-2 py-1 bg-[#F9F7F2] border border-[#E8E4DF] hover:bg-gray-100 text-[#2D2A26] rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <Volume2 className="w-3.5 h-3.5 text-[#4A5D4E]" />
                   Nghe
